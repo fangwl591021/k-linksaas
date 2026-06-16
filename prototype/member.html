@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>K LinkSaaS 會員中心</title>
+  <link rel="stylesheet" href="member.css?v=member-crm-20260617">
+</head>
+<body>
+  <main class="member-shell">
+    <header class="topbar">
+      <a class="brand" href="/">
+        <span>K</span>
+        <strong>K LinkSaaS</strong>
+      </a>
+      <button id="logoutButton" type="button">登出</button>
+    </header>
+
+    <section class="hero">
+      <p class="eyebrow">會員中心</p>
+      <h1 id="memberName">讀取中...</h1>
+      <div class="meta-grid">
+        <article>
+          <span>會員編號</span>
+          <strong id="memberNo">-</strong>
+        </article>
+        <article>
+          <span>點數</span>
+          <strong id="memberPoints">0</strong>
+        </article>
+        <article>
+          <span>方案</span>
+          <strong id="memberPlan">-</strong>
+        </article>
+      </div>
+    </section>
+
+    <section class="quick-actions">
+      <a id="publicCardLink" href="/" target="_blank" rel="noopener">預覽公開名片</a>
+      <button id="copyLinkButton" type="button">複製名片連結</button>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <div>
+          <p class="eyebrow">公開名片</p>
+          <h2>編輯名片資料</h2>
+        </div>
+        <p id="saveStatus" role="status">尚未儲存</p>
+      </div>
+
+      <form id="cardForm" class="card-form">
+        <label>
+          網址代稱
+          <input id="slug" required placeholder="wang-li-chung">
+        </label>
+        <label>
+          名片標題
+          <input id="title" required placeholder="我的電子名片">
+        </label>
+        <label>
+          公開名稱
+          <input id="displayName" placeholder="王立中">
+        </label>
+        <label>
+          公司 / 單位
+          <input id="company" placeholder="K LinkSaaS">
+        </label>
+        <label>
+          職稱
+          <input id="jobTitle" placeholder="數位顧問">
+        </label>
+        <label>
+          電話
+          <input id="phone" placeholder="0900-000-000">
+        </label>
+        <label>
+          電子郵件
+          <input id="email" type="email" placeholder="owner@example.com">
+        </label>
+        <label>
+          網站
+          <input id="website" placeholder="https://example.com">
+        </label>
+        <label>
+          LINE 連結
+          <input id="lineUrl" placeholder="https://line.me/R/ti/p/...">
+        </label>
+        <label>
+          地址
+          <input id="address" placeholder="台北市...">
+        </label>
+        <label>
+          主題色
+          <input id="themeColor" type="color" value="#147d64">
+        </label>
+        <label>
+          發布狀態
+          <select id="isPublished">
+            <option value="1">已發布</option>
+            <option value="0">草稿</option>
+          </select>
+        </label>
+        <label class="full">
+          介紹內容
+          <textarea id="description" rows="4" placeholder="簡短介紹你的服務、專長與聯絡方式"></textarea>
+        </label>
+        <label class="full">
+          公開備註
+          <textarea id="publicNote" rows="3" placeholder="顯示在名片上的補充說明"></textarea>
+        </label>
+        <button type="submit">儲存名片</button>
+      </form>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <div>
+          <p class="eyebrow">MEMBER CRM</p>
+          <h2>我的CRM紀錄</h2>
+        </div>
+        <p id="crmStatus" role="status">讀取中...</p>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>時間</th><th>類別</th><th>狀態</th><th>標題</th><th>內容</th><th>下次跟進</th></tr>
+          </thead>
+          <tbody id="crmRows"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script src="member.js?v=member-crm-20260617"></script>
+</body>
+</html>

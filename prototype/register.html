@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>K LinkSaaS 註冊</title>
+  <link rel="stylesheet" href="register.css">
+  <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+</head>
+<body>
+  <main class="register-shell">
+    <section class="intro-panel">
+      <a class="brand" href="/">
+        <span>K</span>
+        <strong>K LinkSaaS</strong>
+      </a>
+      <div>
+        <p class="eyebrow">會員註冊</p>
+        <h1>建立會員，開始製作電子名片</h1>
+        <p>註冊後會自動建立會員編號、點數帳戶與第一張公開名片。之後再接 LINE userId、Rich Menu、分享追蹤與 CRM。</p>
+      </div>
+      <div class="flow-list">
+        <article><strong>1</strong><span>會員資料</span></article>
+        <article><strong>2</strong><span>建立名片</span></article>
+        <article><strong>3</strong><span>進入後台</span></article>
+      </div>
+    </section>
+
+    <section class="form-panel">
+      <div class="panel-head">
+        <div>
+          <p class="eyebrow">建立帳號</p>
+          <h2>註冊帳號</h2>
+        </div>
+        <a href="/login">登入</a>
+      </div>
+
+      <div class="social-row">
+        <button class="line" id="lineRegisterButton" type="button">LINE 註冊</button>
+        <button id="googleRegisterButton" type="button">使用 Google</button>
+        <button id="facebookRegisterButton" type="button">使用 Facebook</button>
+      </div>
+
+      <form id="registerForm" class="register-form">
+        <label>
+          姓名 / 品牌
+          <input id="displayName" required placeholder="例如：王立中">
+        </label>
+        <label>
+          公司 / 團隊
+          <input id="company" placeholder="例如：Ruflo Cards">
+        </label>
+        <label>
+          電子郵件
+          <input id="email" type="email" required placeholder="owner@example.com">
+        </label>
+        <label>
+          密碼
+          <input id="password" type="password" minlength="8" required placeholder="至少 8 碼">
+        </label>
+        <label>
+          名片網址代碼
+          <input id="slug" placeholder="wang-li-chung">
+        </label>
+        <label>
+          名片標題
+          <input id="cardTitle" placeholder="我的電子名片">
+        </label>
+        <button type="submit">建立會員與名片</button>
+      </form>
+
+      <div class="result-panel" id="registerResult" role="status">
+        填寫資料後送出，系統會寫入 D1。
+      </div>
+    </section>
+  </main>
+
+  <script src="register.js"></script>
+</body>
+</html>

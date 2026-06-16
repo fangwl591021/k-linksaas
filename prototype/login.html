@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>K LinkSaaS 登入</title>
+  <link rel="stylesheet" href="login.css">
+</head>
+<body>
+  <main class="login-shell">
+    <section class="login-panel">
+      <a class="brand" href="/">
+        <span>K</span>
+        <strong>K LinkSaaS</strong>
+      </a>
+
+      <div class="panel-copy">
+        <p class="eyebrow">會員登入</p>
+        <h1>登入後台</h1>
+        <p>使用已註冊的會員帳號進入管理後台。</p>
+      </div>
+
+      <form id="loginForm" class="login-form">
+        <label>
+          電子郵件
+          <input id="email" type="email" autocomplete="email" required placeholder="owner@example.com">
+        </label>
+        <label>
+          密碼
+          <input id="password" type="password" autocomplete="current-password" required placeholder="至少 8 碼">
+        </label>
+        <button type="submit">登入</button>
+      </form>
+
+      <div class="link-row">
+        <a href="/register">建立帳號</a>
+        <a href="/">回到前台</a>
+      </div>
+
+      <p id="loginStatus" class="status" role="status"></p>
+    </section>
+  </main>
+
+  <script src="login.js"></script>
+</body>
+</html>

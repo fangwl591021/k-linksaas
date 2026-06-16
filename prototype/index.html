@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ruflo Cards｜SAAS 電子名片 HTML 版</title>
+  <script>
+    (function () {
+      var params = new URLSearchParams(location.search);
+      var state = params.get("liff.state") || "";
+      var decodedState = decodeURIComponent(state || "");
+      if (params.get("share") === "1" || location.hash.indexOf("share=1") !== -1 || decodedState.indexOf("share=1") !== -1) {
+        document.documentElement.classList.add("auto-share-mode");
+      }
+    }());
+  </script>
+  <link rel="stylesheet" href="styles.css?v=12dd96c8">
+  <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#home" aria-label="Ruflo Cards 首頁">
+      <span class="brand-mark">R</span>
+      <span>Ruflo Cards</span>
+    </a>
+    <nav aria-label="主要導覽">
+      <a href="#home"><span>首頁</span></a>
+      <a href="#card"><span>名片</span></a>
+      <a href="#crm"><span>名單</span></a>
+      <a href="#builder"><span>編輯</span></a>
+      <a href="#login"><span>登入</span></a>
+    </nav>
+    <a class="top-action" href="#builder">建立名片</a>
+  </header>
+
+  <main>
+    <section class="hero" id="home">
+      <div class="hero-copy">
+        <p class="eyebrow">HTML MVP first, LINE later</p>
+        <h1>把電子名片變成可追蹤的商機入口</h1>
+        <p>先用 HTML 版本驗證版型、名單流程、後台邏輯與銷售話術；等確定要推送 LINE，再把入口轉成 LIFF、Rich Menu 與 Webhook 流程。</p>
+        <div class="hero-actions">
+          <a class="button primary" href="#login">開始登入</a>
+          <a class="button primary" href="#card">查看名片頁</a>
+          <a class="button secondary" href="#crm">查看 CRM</a>
+        </div>
+      </div>
+      <div class="hero-panel" aria-label="產品成效摘要">
+        <div>
+          <strong>18.6%</strong>
+          <span>CTA 點擊率</span>
+        </div>
+        <div>
+          <strong>42</strong>
+          <span>本週新名單</span>
+        </div>
+        <div>
+          <strong>7</strong>
+          <span>高意向詢問</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="workspace" id="login">
+      <div class="section-head">
+        <p class="eyebrow">Auth Entry</p>
+        <h2>登入與註冊</h2>
+        <p>HTML 版先確認登入選項與角色流程。正式版再接外部登入、密碼雜湊、登入狀態、權限與租戶資料。</p>
+      </div>
+
+      <div class="auth-grid">
+        <article class="auth-card">
+          <div class="auth-tabs" aria-label="登入模式">
+            <button class="active" type="button">登入</button>
+            <button type="button">註冊</button>
+          </div>
+
+          <div class="social-login">
+            <button class="login-provider line" type="button" data-login="LINE Login">
+              <span>LINE</span>
+              <strong>使用 LINE 登入</strong>
+            </button>
+            <button class="login-provider google" type="button" data-login="Google Login">
+              <span>G</span>
+              <strong>使用 Google / Gmail 登入</strong>
+            </button>
+            <button class="login-provider facebook" type="button" data-login="Facebook Login">
+              <span>f</span>
+              <strong>使用 Facebook 登入</strong>
+            </button>
+          </div>
+
+          <div class="divider"><span>或使用自訂帳密</span></div>
+
+          <form class="login-form" id="loginForm">
+            <label>
+              電子郵件
+              <input id="loginEmail" type="email" placeholder="owner@example.com">
+            </label>
+            <label>
+              密碼
+              <input id="loginPassword" type="password" placeholder="至少 8 碼">
+            </label>
+            <label>
+              角色
+              <select id="loginRole">
+                <option>企業管理者</option>
+                <option>名片持有人</option>
+                <option>平台管理員</option>
+              </select>
+            </label>
+            <button class="submit-button" type="submit">登入 Demo 後台</button>
+            <p class="form-note" id="loginNote" role="status"></p>
+          </form>
+        </article>
+
+        <aside class="integration-panel">
+          <h3>正式轉換設定</h3>
+          <div class="publish-row"><span>正式網站</span><strong>k-linksaas.fangwl591021.workers.dev</strong></div>
+          <div class="publish-row"><span>LIFF ID</span><strong>2007221311-jwiMeoXT</strong></div>
+          <div class="publish-row"><span>LIFF URL</span><strong><a href="https://liff.line.me/2007221311-jwiMeoXT" target="_blank" rel="noopener">https://liff.line.me/2007221311-jwiMeoXT</a></strong></div>
+          <div class="publish-row"><span>優先登入</span><strong>LINE + Google + 帳密</strong></div>
+          <div class="publish-row"><span>FB 登入</span><strong>第二階段保留</strong></div>
+          <div class="liff-status-card" id="liffStatusCard">
+            <span>LINE 狀態</span>
+            <strong id="liffStatusText">等待 LIFF 初始化</strong>
+            <small id="liffProfileText">請用 LINE 開啟 LIFF URL 測試正式登入。</small>
+          </div>
+          <p class="panel-note">LINE 登入未來用於綁定 LINE 使用者識別碼；Google 適合管理者；自訂帳密保留企業帳號需求。</p>
+        </aside>
+      </div>
+    </section>
+
+    <section class="workspace" id="card">
+      <div class="section-head">
+        <p class="eyebrow">公開名片</p>
+        <h2>公開電子名片</h2>
+        <p>訪客從 QR code、分享連結、官網、活動頁或之後的 LINE Rich Menu 進來，看到的是同一套卡片內容。</p>
+      </div>
+
+      <div class="card-grid">
+        <article class="business-card" aria-label="公開電子名片預覽">
+          <div class="card-share-header">
+            <button class="public-share-button" id="publicShareButton" type="button">分享</button>
+          </div>
+          <div class="public-cover-wrap">
+            <img id="previewCover" class="public-cover landscape" src="https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1200&q=80" alt="名片封面">
+          </div>
+          <div class="profile-band">
+            <div class="avatar">WL</div>
+            <div>
+              <p class="eyebrow">Ruflo Cards</p>
+              <h3 id="previewName">王立中</h3>
+              <p class="title" id="previewTitle">企業數位轉型顧問</p>
+            </div>
+          </div>
+          <p class="bio" id="previewBio">協助中小企業把 LINE 官方帳號、電子名片、名單管理與成交追蹤整合成可衡量的商機流程。</p>
+          <div class="contact-list">
+            <span>service@ruflo.cards</span>
+            <span>台北市信義區</span>
+            <span>https://cards.example.com/wl</span>
+          </div>
+          <div class="actions">
+            <button class="action-button" data-track="line_follow_click">加入 LINE 諮詢</button>
+            <button class="action-button blue" data-track="lead_form_open">索取方案</button>
+            <button class="action-button orange" data-track="vcard_download">存入通訊錄</button>
+          </div>
+          <form class="lead-form" id="leadForm">
+            <h4>留下需求</h4>
+            <label>
+              姓名
+              <input name="name" id="leadName" placeholder="請輸入姓名">
+            </label>
+            <label>
+              聯絡方式
+              <input name="contact" id="leadContact" placeholder="電話、電子郵件或 LINE">
+            </label>
+            <label>
+              想了解的內容
+              <textarea name="message" id="leadMessage" rows="4" placeholder="例如：團隊名片、活動 QR code、LINE 名單追蹤"></textarea>
+            </label>
+            <button class="submit-button" type="submit">送出需求</button>
+            <p class="form-note" id="formNote" role="status"></p>
+          </form>
+        </article>
+
+        <aside class="insight-panel">
+          <h3>HTML 版先驗證</h3>
+          <ul class="check-list">
+            <li>名片內容是否能說清楚服務</li>
+            <li>CTA 是否能引導詢問或預約</li>
+            <li>Lead 欄位是否足夠但不過度</li>
+            <li>CRM 狀態是否符合實際跟進流程</li>
+            <li>LINE 轉換前的事件名稱是否清楚</li>
+          </ul>
+          <div class="source-box">
+            <span>目前來源</span>
+            <strong id="sourceLabel">HTML Demo / direct</strong>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="workspace" id="crm">
+      <div class="section-head">
+        <p class="eyebrow">Lead CRM</p>
+        <h2>名單與追蹤</h2>
+        <p>第一版先把名單欄位、狀態與來源追蹤做清楚，之後推 LINE 時只需要把 LINE 使用者識別碼與回傳來源接進來。</p>
+      </div>
+      <div class="crm-layout">
+        <div class="metrics">
+          <div><strong id="metricViews">148</strong><span>瀏覽</span></div>
+          <div><strong id="metricClicks">36</strong><span>CTA 點擊</span></div>
+          <div><strong id="metricLeads">12</strong><span>新名單</span></div>
+          <div><strong>5</strong><span>已預約</span></div>
+        </div>
+        <table class="lead-table">
+          <thead>
+            <tr>
+              <th>來源</th>
+              <th>需求</th>
+              <th>狀態</th>
+              <th>負責人</th>
+            </tr>
+          </thead>
+          <tbody id="leadRows">
+            <tr>
+              <td>展會 QR</td>
+              <td>預約 demo</td>
+              <td><span class="status new">新名單</span></td>
+              <td>王立中</td>
+            </tr>
+            <tr>
+              <td>分享連結</td>
+              <td>索取報價</td>
+              <td><span class="status warm">跟進中</span></td>
+              <td>業務 A</td>
+            </tr>
+            <tr>
+              <td>官網入口</td>
+              <td>團隊名片</td>
+              <td><span class="status won">已成交</span></td>
+              <td>王立中</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="workspace" id="builder">
+      <div class="section-head">
+        <p class="eyebrow">Card Builder</p>
+        <h2>所見即所得名片編輯器</h2>
+        <p>導入 AI工坊的名片編輯模式：直接點預覽上的圖片、文字或按鈕修改，保留目前 SAAS demo 的資料與部署邊界。</p>
+      </div>
+      <div class="builder-grid">
+        <article class="wysiwyg-builder">
+          <div class="wysiwyg-toolbar">
+            <div>
+              <p class="eyebrow">WYSIWYG</p>
+              <h3>點擊虛線框區域修改內容</h3>
+            </div>
+            <div class="layout-switcher" aria-label="名片版型">
+              <button class="active" type="button" data-layout="landscape">標準</button>
+              <button type="button" data-layout="portrait">滿版</button>
+              <button type="button" data-layout="square">方形</button>
+            </div>
+          </div>
+          <div class="wysiwyg-canvas" id="wysiwygCanvas" aria-label="所見即所得名片預覽"></div>
+          <p class="form-note" id="builderNote" role="status">這裡只導入名片編輯模式；正式儲存、上傳與 LINE 串接之後再接 API。</p>
+        </article>
+        <div class="publish-panel">
+          <h3>發布準備</h3>
+          <div class="publish-row"><span>公開網址</span><strong>https://k-linksaas.fangwl591021.workers.dev/c/wang-li-chung</strong></div>
+          <div class="publish-row"><span>QR code</span><strong>可匯出</strong></div>
+          <div class="publish-row"><span>LINE LIFF</span><strong><a href="https://liff.line.me/2007221311-jwiMeoXT" target="_blank" rel="noopener">https://liff.line.me/2007221311-jwiMeoXT</a></strong></div>
+          <div class="publish-row"><span>Webhook</span><strong>之後接入</strong></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="workspace" id="pricing">
+      <div class="section-head">
+        <p class="eyebrow">Pricing Draft</p>
+        <h2>方案雛形</h2>
+      </div>
+      <div class="pricing-grid">
+        <article>
+          <h3>個人版</h3>
+          <strong>NT$ 299 / 月</strong>
+          <p>一張名片、基本 Lead 表單、瀏覽與點擊統計。</p>
+        </article>
+        <article>
+          <h3>團隊版</h3>
+          <strong>NT$ 1,280 / 月</strong>
+          <p>多張名片、團隊 CRM、CSV 匯出、品牌樣式。</p>
+        </article>
+        <article>
+          <h3>LINE 加值</h3>
+          <strong>專案報價</strong>
+          <p>LIFF、圖文選單、Webhook、LINE 使用者識別碼對應與標籤流程。</p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <div class="edit-modal hidden" id="cardEditModal" aria-hidden="true">
+    <div class="edit-dialog" role="dialog" aria-modal="true" aria-labelledby="editModalTitle">
+      <div class="edit-dialog-head">
+        <h3 id="editModalTitle">編輯內容</h3>
+        <button type="button" id="closeEditModal" aria-label="關閉">×</button>
+      </div>
+      <form id="cardEditForm" class="edit-dialog-body"></form>
+    </div>
+  </div>
+
+  <script src="app.js?v=flex-header-65x25-20260616"></script>
+</body>
+</html>

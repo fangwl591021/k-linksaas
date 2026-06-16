@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>K LinkSaaS 後台</title>
+  <link rel="stylesheet" href="admin.css?v=user-search-20260617">
+</head>
+<body>
+  <div class="admin-shell">
+    <aside class="sidebar" aria-label="管理選單">
+      <div class="brand-block">
+        <span class="brand-mark">K</span>
+        <div>
+          <p class="eyebrow">K LinkSaaS</p>
+          <h1>後台</h1>
+        </div>
+      </div>
+
+      <div class="side-summary" aria-label="營運總覽">
+        <article><span>會員</span><strong id="totalUsers">0</strong></article>
+        <article><span>名片</span><strong id="totalCards">0</strong></article>
+        <article><span>名單</span><strong id="totalLeads">0</strong></article>
+        <article><span>事件</span><strong id="totalEvents">0</strong></article>
+        <article><span>總點數</span><strong id="totalPoints">0</strong></article>
+      </div>
+
+      <nav class="side-nav" aria-label="資料表切換">
+        <button class="active" type="button" data-tab="records">事項紀錄</button>
+        <button type="button" data-tab="users">會員資料</button>
+        <button type="button" data-tab="cards">名片資料</button>
+        <button type="button" data-tab="member-crm">會員CRM</button>
+        <button type="button" data-tab="leads">名單資料</button>
+        <button type="button" data-tab="events">事件紀錄</button>
+      </nav>
+
+      <div class="side-actions">
+        <div class="session-card">
+          <span>登入狀態</span>
+          <strong id="sessionUser">確認中...</strong>
+        </div>
+        <a href="/" target="_blank" rel="noopener">開啟前台</a>
+        <button id="refreshButton" type="button">重新整理</button>
+        <button id="logoutButton" type="button">登出</button>
+      </div>
+    </aside>
+
+    <main class="content">
+      <header class="content-header">
+        <div>
+          <p class="eyebrow">營運控制台</p>
+          <h2>營運管理後台</h2>
+        </div>
+        <p id="recordStatus" role="status">讀取中...</p>
+      </header>
+
+      <section class="record-panel">
+        <div class="panel-head">
+          <div>
+            <p class="eyebrow">手動紀錄</p>
+            <h3>新增事項紀錄</h3>
+          </div>
+          <button class="toggle-record-button" id="toggleRecordForm" type="button" aria-expanded="false">展開</button>
+        </div>
+        <form id="recordForm" class="record-form collapsed">
+          <label>
+            類別
+            <select id="recordCategory">
+              <option value="general">一般</option>
+              <option value="member">會員</option>
+              <option value="card">名片</option>
+              <option value="lead">名單</option>
+              <option value="points">點數</option>
+              <option value="line">LINE</option>
+              <option value="payment">付款</option>
+              <option value="bug">問題</option>
+            </select>
+          </label>
+          <label>
+            狀態
+            <select id="recordStatusInput">
+              <option value="open">待處理</option>
+              <option value="doing">處理中</option>
+              <option value="done">完成</option>
+              <option value="blocked">卡住</option>
+            </select>
+          </label>
+          <label>
+            優先
+            <select id="recordPriority">
+              <option value="normal">一般</option>
+              <option value="high">高</option>
+              <option value="low">低</option>
+            </select>
+          </label>
+          <label class="wide">
+            標題
+            <input id="recordTitle" required placeholder="例如：確認 LIFF Endpoint 設定">
+          </label>
+          <label class="wide">
+            內容
+            <textarea id="recordBody" rows="4" placeholder="紀錄處理內容、客戶回覆、異常狀況或下一步"></textarea>
+          </label>
+          <button type="submit">新增紀錄</button>
+        </form>
+      </section>
+
+      <section class="record-panel">
+        <div class="panel-head">
+          <div>
+            <p class="eyebrow">MEMBER CRM</p>
+            <h3>新增會員CRM紀錄</h3>
+          </div>
+        </div>
+        <form id="memberCrmForm" class="record-form">
+          <label>
+            會員編號 / 會員ID
+            <input id="crmMemberRef" required placeholder="例如 M788185">
+          </label>
+          <label>
+            類別
+            <select id="crmCategory">
+              <option value="general">一般</option>
+              <option value="contact">聯絡</option>
+              <option value="follow_up">跟進</option>
+              <option value="referral">推薦</option>
+              <option value="points">點數</option>
+              <option value="store">商店</option>
+              <option value="system">系統</option>
+            </select>
+          </label>
+          <label>
+            狀態
+            <select id="crmStatus">
+              <option value="open">待處理</option>
+              <option value="doing">處理中</option>
+              <option value="done">已完成</option>
+              <option value="blocked">阻塞</option>
+            </select>
+          </label>
+          <label>
+            優先
+            <select id="crmPriority">
+              <option value="normal">一般</option>
+              <option value="high">高</option>
+              <option value="low">低</option>
+            </select>
+          </label>
+          <label>
+            下次跟進
+            <input id="crmNextFollowUpAt" type="datetime-local">
+          </label>
+          <label>
+            關聯會員編號
+            <input id="crmRelatedMemberNo" placeholder="可留空">
+          </label>
+          <label class="wide">
+            標題
+            <input id="crmTitle" required placeholder="例如：首次聯絡、推薦關係確認">
+          </label>
+          <label class="wide">
+            內容
+            <textarea id="crmBody" rows="4" placeholder="紀錄聯絡內容、客戶回覆、下一步"></textarea>
+          </label>
+          <button type="submit">新增CRM紀錄</button>
+        </form>
+      </section>
+
+      <section class="edit-panel collapsed" id="editPanel">
+        <div class="panel-head">
+          <div>
+          <p class="eyebrow">資料編輯</p>
+            <h3 id="editTitle">編修</h3>
+          </div>
+          <button class="toggle-record-button" id="closeEditPanel" type="button">關閉</button>
+        </div>
+        <form id="editForm" class="edit-form"></form>
+      </section>
+
+      <section class="data-section active" id="tab-records">
+        <div class="panel-head"><h3>事項紀錄</h3><span id="recordsCount"></span></div>
+        <div class="table-wrap"><table><thead><tr><th>時間</th><th>類別</th><th>狀態</th><th>優先</th><th>標題</th><th>內容</th></tr></thead><tbody id="recordsRows"></tbody></table></div>
+      </section>
+
+      <section class="data-section" id="tab-users">
+        <div class="panel-head"><h3>會員資料</h3><span id="usersCount"></span></div>
+        <div class="table-tools">
+          <label>
+            搜尋會員
+            <input id="userSearchInput" type="search" placeholder="會員編號、名稱、Email、電話、公司、LINE userId、登入識別碼">
+          </label>
+        </div>
+        <div class="table-wrap"><table class="wide-table"><thead><tr><th>操作</th><th>會員</th><th>聯絡資料</th><th>帳號狀態</th><th>使用數據</th><th>登入識別</th><th>時間</th></tr></thead><tbody id="usersRows"></tbody></table></div>
+      </section>
+
+      <section class="data-section" id="tab-cards">
+        <div class="panel-head"><h3>名片資料</h3><span id="cardsCount"></span></div>
+        <div class="table-wrap"><table class="wide-table"><thead><tr><th>操作</th><th>名片</th><th>持有人</th><th>公開聯絡</th><th>樣式 / 發布</th><th>成效</th><th>更新</th></tr></thead><tbody id="cardsRows"></tbody></table></div>
+      </section>
+
+      <section class="data-section" id="tab-member-crm">
+        <div class="panel-head"><h3>會員CRM紀錄</h3><span id="memberCrmCount"></span></div>
+        <div class="table-wrap"><table class="wide-table"><thead><tr><th>時間</th><th>會員</th><th>類別</th><th>狀態</th><th>標題</th><th>內容</th><th>下次跟進</th><th>關聯</th></tr></thead><tbody id="memberCrmRows"></tbody></table></div>
+      </section>
+
+      <section class="data-section" id="tab-leads">
+        <div class="panel-head"><h3>名單資料</h3><span id="leadsCount"></span></div>
+        <div class="table-wrap"><table><thead><tr><th>時間</th><th>名片</th><th>姓名</th><th>聯絡</th><th>來源</th><th>內容</th></tr></thead><tbody id="leadsRows"></tbody></table></div>
+      </section>
+
+      <section class="data-section" id="tab-events">
+        <div class="panel-head"><h3>事件紀錄</h3><span id="eventsCount"></span></div>
+        <div class="table-wrap"><table><thead><tr><th>時間</th><th>名片</th><th>事件</th><th>來源</th><th>資料</th></tr></thead><tbody id="eventsRows"></tbody></table></div>
+      </section>
+    </main>
+  </div>
+
+  <script src="admin.js?v=user-search-20260617"></script>
+</body>
+</html>
