@@ -200,7 +200,7 @@ function isCurrentUserCard() {
 }
 
 function setEditPermission(message = "") {
-  appState.canEdit = isCurrentUserCard();
+  appState.canEdit = isFilePreview() || isCurrentUserCard();
   document.body.classList.toggle("card-readonly", !appState.canEdit);
   document.querySelectorAll("#saveCardButton, .add-card-button, [data-edit-type]").forEach((element) => {
     element.disabled = !appState.canEdit;
@@ -208,6 +208,8 @@ function setEditPermission(message = "") {
   });
   if (message) {
     setBuilderNote(message);
+  } else if (isFilePreview()) {
+    setBuilderNote("本機預覽模式，可直接編輯；正式網站會檢查登入身分。");
   } else if (!appState.sessionUser) {
     setBuilderNote("請先登入自己的帳號後再編輯名片。");
   } else if (!appState.canEdit) {
