@@ -26,16 +26,16 @@ const cardConfig = {
   descColor: "#61707a",
   descAlign: "center",
   buttons: [
-    { label: "LINE ?餃", url: appConfig.liffUrl, color: "#06C755" },
+    { label: "LINE 登入", url: appConfig.liffUrl, color: "#06C755" },
     { label: "Book a Demo", url: appConfig.siteUrl, color: "#2c5f9e" },
     { label: "Download vCard", url: "#vcard", color: "#c8792d" }
   ]
 };
 
 const layoutLabels = {
-  landscape: "璅?",
-  portrait: "皛輻?",
-  square: "?孵耦"
+  landscape: "標準",
+  portrait: "滿版",
+  square: "方形"
 };
 
 const layoutKeys = ["landscape", "portrait", "square"];
@@ -187,7 +187,7 @@ async function apiRequest(path, options = {}) {
   });
   const data = await response.json().catch(() => ({}));
   if (!response.ok || data.ok === false) {
-    throw new Error(data.error || `API 憭望?嚗?{response.status}`);
+    throw new Error(data.error || `API 錯誤：${response.status}`);
   }
   return data;
 }
@@ -213,15 +213,15 @@ function ensureProfileHomeElement() {
     <div class="profile-home-cover" data-profile-cover></div>
     <div class="profile-home-body">
       <div class="profile-home-avatar" data-profile-avatar>U</div>
-      <p class="eyebrow">?犖擐?</p>
-      <h2 data-profile-name>?擐?</h2>
+      <p class="eyebrow">個人首頁</p>
+      <h2 data-profile-name>會員首頁</h2>
       <p class="profile-home-code" data-profile-code></p>
       <p class="profile-home-headline" data-profile-headline></p>
       <p class="profile-home-intro" data-profile-intro></p>
       <div class="profile-home-actions">
-        <a class="button primary" data-profile-line href="#card">LINE ?舐窗</a>
-        <a class="button secondary" data-profile-phone href="#card">銵??餉店</a>
-        <a class="button secondary" data-profile-website href="#card">摰蝬脩?</a>
+        <a class="button primary" data-profile-line href="#card">LINE 聯絡</a>
+        <a class="button secondary" data-profile-phone href="#card">行動電話</a>
+        <a class="button secondary" data-profile-website href="#card">官方網站</a>
       </div>
     </div>
   `;
@@ -234,7 +234,7 @@ function renderProfileHome(profile) {
   if (!profile) return;
   const section = ensureProfileHomeElement();
   section.classList.remove("hidden");
-  const displayName = profile.displayName || profile.storeCode || "?擐?";
+  const displayName = profile.displayName || profile.storeCode || "會員首頁";
   const coverUrl = profile.coverUrl || cardConfig.coverUrl || "";
   const avatarText = displayName.trim().slice(0, 1).toUpperCase() || "U";
   const cover = section.querySelector("[data-profile-cover]");
@@ -243,16 +243,16 @@ function renderProfileHome(profile) {
   }
   section.querySelector("[data-profile-avatar]").textContent = avatarText;
   section.querySelector("[data-profile-name]").textContent = displayName;
-  section.querySelector("[data-profile-code]").textContent = `撠惇蝬脣? /u/${profile.storeCode || appConfig.profileCode}`;
+  section.querySelector("[data-profile-code]").textContent = `專屬網址 /u/${profile.storeCode || appConfig.profileCode}`;
   section.querySelector("[data-profile-headline]").textContent = profile.headline || "";
   section.querySelector("[data-profile-intro]").textContent = profile.intro || "";
 
   const line = section.querySelector("[data-profile-line]");
   const phone = section.querySelector("[data-profile-phone]");
   const website = section.querySelector("[data-profile-website]");
-  setProfileAction(line, profile.lineFriendUrl, "LINE ?舐窗");
-  setProfileAction(phone, profile.phone ? `tel:${profile.phone}` : "", "銵??餉店");
-  setProfileAction(website, profile.website, "摰蝬脩?");
+  setProfileAction(line, profile.lineFriendUrl, "LINE 聯絡");
+  setProfileAction(phone, profile.phone ? `tel:${profile.phone}` : "", "行動電話");
+  setProfileAction(website, profile.website, "官方網站");
 }
 
 function setProfileAction(element, url, label) {
@@ -296,14 +296,14 @@ async function loadCardFromD1() {
     syncLayoutButtons();
     renderWysiwygCard();
     updatePublicCardFromConfig();
-    setBuilderNote(`撌脰??亙??????湔??嚗?{data.card.updatedAt || "??"}`);
+    setBuilderNote(`已載入名片資料：${data.card.updatedAt || "尚未更新"}`);
   } catch (error) {
-    setBuilderNote(`??鞈?霈?仃???蝙?函?ａ?閮剛???${error.message}`);
+    setBuilderNote(`名片資料讀取失敗：${error.message}`);
   }
 }
 
 async function saveCardToD1() {
-  setBuilderNote("甇??脣???...");
+  setBuilderNote("正在儲存名片...");
   saveActiveLayoutSnapshot();
   const owner = appState.lineProfile
     ? {
@@ -331,7 +331,7 @@ async function saveCardToD1() {
     updatePublicCardFromConfig();
     setBuilderNote("名片已儲存。");
   } catch (error) {
-    setBuilderNote(`???脣?憭望?嚗?{error.message}`);
+    setBuilderNote(`名片儲存失敗：${error.message}`);
   }
 }
 
@@ -362,7 +362,7 @@ async function uploadImageBlob(blob) {
   });
   const data = await response.json().catch(() => ({}));
   if (!response.ok || data.ok === false) {
-    throw new Error(data.error || `API 憭望?嚗?{response.status}`);
+    throw new Error(data.error || `API 錯誤：${response.status}`);
   }
   return data.url;
 }
@@ -436,7 +436,7 @@ function setCardLayout(layout) {
   syncLayoutButtons();
   renderWysiwygCard();
   updatePublicCardFromConfig();
-  setBuilderNote(`??撌脣??嚗?{cardConfig.layout === "portrait" ? "皛輻?" : cardConfig.layout === "square" ? "?孵耦" : "璅?"}`);
+  setBuilderNote(`版型已切換：${layoutLabels[cardConfig.layout] || "標準"}`);
 }
 
 function lockButton(button, processingText = "處理中...", doneText = "已完成", options = {}) {
@@ -530,7 +530,7 @@ document.querySelectorAll("[data-track]").forEach((button) => {
     await runLocked(button, async () => {
       appState.metrics.clicks += 1;
       renderMetrics();
-      if (els.formNote) els.formNote.textContent = `撌脰???CTA嚗?{button.dataset.track}`;
+      if (els.formNote) els.formNote.textContent = `已點擊 CTA：${button.dataset.track}`;
       await logEvent(`click:${button.dataset.track}`);
     });
   });
@@ -540,9 +540,9 @@ const leadForm = document.querySelector("#leadForm");
 if (leadForm) {
   leadForm.addEventListener("submit", async (event) => {
     event.preventDefault();
-    const lock = lockButton(event.submitter, "?銝?..", "撌脤");
+    const lock = lockButton(event.submitter, "送出中...", "已送出");
     if (!lock) return;
-    const name = document.querySelector("#leadName")?.value.trim() || "閮芸恥";
+    const name = document.querySelector("#leadName")?.value.trim() || "訪客";
     const contact = document.querySelector("#leadContact")?.value.trim() || "";
     const message = document.querySelector("#leadMessage")?.value.trim() || "";
 
@@ -565,7 +565,7 @@ if (leadForm) {
       lock.done();
     } catch (error) {
       lock.fail();
-      if (els.formNote) els.formNote.textContent = `?撖怠憭望?嚗?{error.message}`;
+      if (els.formNote) els.formNote.textContent = `名單寫入失敗：${error.message}`;
     }
   });
 }
@@ -614,7 +614,7 @@ function installSaveButton() {
   button.id = "saveCardButton";
   button.type = "button";
   button.className = "submit-button";
-  button.textContent = "?脣???";
+  button.textContent = "儲存名片";
   button.addEventListener("click", () => runLocked(button, saveCardToD1, "儲存中...", "已儲存"));
   toolbar.append(button);
 }
@@ -661,7 +661,7 @@ function renderWysiwygCard() {
   const cover = document.createElement("img");
   cover.className = `editable-cover ${cardConfig.layout}`;
   cover.src = cardConfig.coverUrl;
-  cover.alt = "??撠";
+  cover.alt = "名片封面";
   cover.onerror = () => {
     cover.src = "https://placehold.co/800x520?text=Cover";
   };
@@ -670,7 +670,7 @@ function renderWysiwygCard() {
   const shareButton = document.createElement("button");
   shareButton.type = "button";
   shareButton.className = "share-top-button";
-  shareButton.textContent = "?澈";
+  shareButton.textContent = "分享";
   shareButton.addEventListener("click", () => runLocked(shareButton, shareCardDemo, "分享中...", "已完成", { resetAfterMs: 1200 }));
   cardHeader.append(shareButton);
   coverWrap.append(coverTarget);
@@ -689,7 +689,7 @@ function renderWysiwygCard() {
   const descTarget = createTarget("desc", "編");
   const desc = document.createElement("div");
   desc.className = "editable-desc";
-  desc.textContent = cardConfig.desc || "暺?蝺刻摩??隞晶";
+  desc.textContent = cardConfig.desc || "點擊編輯名片介紹";
   desc.style.color = cardConfig.descColor;
   desc.style.textAlign = cardConfig.descAlign;
   descTarget.append(desc);
@@ -705,7 +705,7 @@ function renderWysiwygCard() {
     const inner = document.createElement("div");
     inner.className = "editable-button";
     inner.style.background = item.color || "#06C755";
-    inner.textContent = item.label || "??";
+    inner.textContent = item.label || "按鈕";
     buttonTarget.append(inner);
     buttons.append(buttonTarget);
   });
@@ -713,13 +713,13 @@ function renderWysiwygCard() {
   const add = document.createElement("button");
   add.type = "button";
   add.className = "add-card-button";
-  add.textContent = "+ ?啣???";
+  add.textContent = "+ 新增按鈕";
   add.addEventListener("click", () => {
     if (cardConfig.buttons.length >= 4) {
       setBuilderNote("最多只能保留 4 個按鈕。請先刪除一個按鈕再新增。");
       return;
     }
-    cardConfig.buttons.push({ label: "?啣???", url: "", color: "#06C755" });
+    cardConfig.buttons.push({ label: "新增按鈕", url: "", color: "#06C755" });
     commitActiveLayoutEdit();
     renderWysiwygCard();
     openEditModal("button", cardConfig.buttons.length - 1);
@@ -744,28 +744,28 @@ function openEditModal(type, buttonIndex = -1) {
   els.cardEditForm.replaceChildren();
 
   if (type === "cover") {
-    els.editModalTitle.textContent = "蝺刻摩撠??";
+    els.editModalTitle.textContent = "編輯封面圖片";
     appendCoverUpload(cardConfig.coverUrl);
-    appendTextInput("暺????", "editCoverLink", cardConfig.coverLink, "https:// / tel: / mailto: / line://");
+    appendTextInput("點圖連結", "editCoverLink", cardConfig.coverLink, "https:// / tel: / mailto: / line://");
   } else if (type === "title") {
-    els.editModalTitle.textContent = "蝺刻摩憪? / ??";
+    els.editModalTitle.textContent = "編輯標題 / 名稱";
     appendTextInput("標題", "editTitleInput", cardConfig.title, "請輸入名稱");
   } else if (type === "desc") {
-    els.editModalTitle.textContent = "蝺刻摩隞晶??";
-    appendTextarea("隞晶?批捆", "editDescInput", cardConfig.desc);
+    els.editModalTitle.textContent = "編輯介紹內容";
+    appendTextarea("介紹內容", "editDescInput", cardConfig.desc);
     appendTextInput("聊天室顯示文字", "editChatText", cardConfig.chatText, "分享到 LINE 時顯示的文字");
-    appendSelect("??撠?", "editDescAlign", cardConfig.descAlign, [
-      ["left", "?椰"],
-      ["center", "蝵桐葉"],
-      ["right", "?"]
+    appendSelect("文字對齊", "editDescAlign", cardConfig.descAlign, [
+      ["left", "靠左"],
+      ["center", "置中"],
+      ["right", "靠右"]
     ]);
-    appendColorInput("??憿", "editDescColor", cardConfig.descColor);
+    appendColorInput("文字顏色", "editDescColor", cardConfig.descColor);
   } else if (type === "button") {
     const item = cardConfig.buttons[buttonIndex] || { label: "", url: "", color: "#06C755" };
-    els.editModalTitle.textContent = `蝺刻摩?? ${buttonIndex + 1}`;
-    appendTextInput("????", "editButtonLabel", item.label, "????");
-    appendTextInput("???蝬脣?", "editButtonUrl", item.url, "https:// / tel: / mailto: / line://");
-    appendColorInput("??憿", "editButtonColor", item.color || "#06C755");
+    els.editModalTitle.textContent = `編輯按鈕 ${buttonIndex + 1}`;
+    appendTextInput("按鈕文字", "editButtonLabel", item.label, "按鈕文字");
+    appendTextInput("按鈕連結", "editButtonUrl", item.url, "https:// / tel: / mailto: / line://");
+    appendColorInput("按鈕顏色", "editButtonColor", item.color || "#06C755");
   }
 
   const actions = document.createElement("div");
@@ -773,12 +773,12 @@ function openEditModal(type, buttonIndex = -1) {
   const cancel = document.createElement("button");
   cancel.type = "button";
   cancel.className = "muted-button";
-  cancel.textContent = "??";
+  cancel.textContent = "取消";
   cancel.addEventListener("click", closeEditModal);
   const apply = document.createElement("button");
   apply.type = "submit";
   apply.className = "submit-button";
-  apply.textContent = "憟";
+  apply.textContent = "套用";
   actions.append(cancel, apply);
   els.cardEditForm.append(actions);
 
@@ -854,7 +854,7 @@ function appendCoverUpload(value) {
 
   const preview = document.createElement("img");
   preview.id = "editCoverPreview";
-  preview.alt = "撠?汗";
+  preview.alt = "封面預覽";
   preview.src = value || "";
 
   wrapper.append(input, preview);
@@ -866,7 +866,7 @@ function appendCoverUpload(value) {
   const cropHead = document.createElement("div");
   cropHead.className = "photo-cropper-head";
   const cropTitle = document.createElement("strong");
-  cropTitle.textContent = "鋆?撠";
+  cropTitle.textContent = "裁切封面";
   const cropHint = document.createElement("span");
   cropHint.textContent = "圖片會先完整放入畫面，可再放大或微調位置。";
   cropHead.append(cropTitle, cropHint);
@@ -879,15 +879,15 @@ function appendCoverUpload(value) {
 
   const controls = document.createElement("div");
   controls.className = "crop-controls";
-  const zoom = createCropRange("蝮格", "coverCropZoom", 1, 3, 1, 0.01);
-  const offsetX = createCropRange("撌血", "coverCropX", -100, 100, 0, 1);
-  const offsetY = createCropRange("銝?", "coverCropY", -100, 100, 0, 1);
+  const zoom = createCropRange("縮放", "coverCropZoom", 1, 3, 1, 0.01);
+  const offsetX = createCropRange("左右", "coverCropX", -100, 100, 0, 1);
+  const offsetY = createCropRange("上下", "coverCropY", -100, 100, 0, 1);
   controls.append(zoom.label, offsetX.label, offsetY.label);
 
   const applyCrop = document.createElement("button");
   applyCrop.type = "button";
   applyCrop.className = "submit-button";
-  applyCrop.textContent = "憟鋆?";
+  applyCrop.textContent = "套用裁切";
 
   cropper.append(cropHead, canvas, controls, applyCrop);
   els.cardEditForm.append(cropper);
@@ -1058,7 +1058,7 @@ function appendCoverUpload(value) {
   });
 
   const fallback = document.createElement("label");
-  fallback.textContent = "?票銝??雯?";
+  fallback.textContent = "點選上傳圖片";
   const urlInput = document.createElement("input");
   urlInput.id = "editCoverUrl";
   urlInput.value = value || "";
@@ -1128,7 +1128,7 @@ els.cardEditForm?.addEventListener("submit", async (event) => {
     const uploadedUrl = preview?.dataset.uploadedUrl || "";
     const typedUrl = document.querySelector("#editCoverUrl")?.value || "";
     if (appState.editor.pendingCoverBlob) {
-      setBuilderNote("甇?銝撠??...");
+      setBuilderNote("正在上傳封面圖片...");
       try {
         cardConfig.coverUrl = await uploadImageBlob(appState.editor.pendingCoverBlob);
         appState.editor.pendingCoverBlob = null;
@@ -1138,16 +1138,16 @@ els.cardEditForm?.addEventListener("submit", async (event) => {
         }
       } catch (error) {
         lock.fail();
-        setBuilderNote(`撠??銝憭望?嚗?{error.message}`);
+        setBuilderNote(`封面圖片上傳失敗：${error.message}`);
         return;
       }
     } else if (uploadedUrl.startsWith("data:image/")) {
-      setBuilderNote("甇?銝撠??...");
+      setBuilderNote("正在上傳封面圖片...");
       try {
         cardConfig.coverUrl = await uploadImageDataUrl(uploadedUrl);
       } catch (error) {
         lock.fail();
-        setBuilderNote(`撠??銝憭望?嚗?{error.message}`);
+        setBuilderNote(`封面圖片上傳失敗：${error.message}`);
         return;
       }
     } else {
@@ -1157,14 +1157,14 @@ els.cardEditForm?.addEventListener("submit", async (event) => {
   } else if (appState.editor.type === "title") {
     cardConfig.title = document.querySelector("#editTitleInput").value.trim() || "未命名名片";
   } else if (appState.editor.type === "desc") {
-    cardConfig.desc = document.querySelector("#editDescInput").value.trim() || "暺?蝺刻摩??隞晶";
+    cardConfig.desc = document.querySelector("#editDescInput").value.trim() || "點擊編輯名片介紹";
     cardConfig.chatText = document.querySelector("#editChatText")?.value.trim() || "";
     cardConfig.descAlign = document.querySelector("#editDescAlign").value;
     cardConfig.descColor = document.querySelector("#editDescColor").value || "#61707a";
   } else if (appState.editor.type === "button") {
     const item = cardConfig.buttons[appState.editor.buttonIndex];
     if (item) {
-      item.label = document.querySelector("#editButtonLabel").value.trim() || "??";
+      item.label = document.querySelector("#editButtonLabel").value.trim() || "按鈕";
       item.url = escapeUrl(document.querySelector("#editButtonUrl").value);
       item.color = document.querySelector("#editButtonColor").value || "#06C755";
     }
@@ -1196,7 +1196,7 @@ function updatePublicCardFromConfig() {
     previewCover.style.cursor = cardConfig.coverLink ? "pointer" : "";
   }
   if (previewName) previewName.textContent = cardConfig.title;
-  if (previewTitle) previewTitle.textContent = "SaaS ?餃???";
+  if (previewTitle) previewTitle.textContent = "SaaS 電子名片";
   if (previewBio) previewBio.textContent = cardConfig.desc.replace(/\n/g, " ");
 
   const actionButtons = document.querySelectorAll(".actions .action-button");
@@ -1241,10 +1241,10 @@ async function initializeLiff() {
 }
 
 async function handleLineLogin() {
-  if (els.loginNote) els.loginNote.textContent = "甇??? LINE ?餃...";
+  if (els.loginNote) els.loginNote.textContent = "正在啟動 LINE 登入...";
   const ready = await initializeLiff();
   if (!ready) {
-    if (els.loginNote) els.loginNote.textContent = `隢??LIFF URL 皜祈岫嚗?{appConfig.liffUrl}`;
+    if (els.loginNote) els.loginNote.textContent = `請確認 LIFF URL 設定：${appConfig.liffUrl}`;
     return;
   }
 
@@ -1255,13 +1255,13 @@ async function handleLineLogin() {
 
   appState.lineProfile = await window.liff.getProfile();
   setLiffStatus("LINE 已登入", `${appState.lineProfile.displayName} / ${appState.lineProfile.userId}`);
-  if (els.loginNote) els.loginNote.textContent = `LINE ?餃摰?嚗?{appState.lineProfile.displayName}`;
+  if (els.loginNote) els.loginNote.textContent = `LINE 已登入：${appState.lineProfile.displayName}`;
 }
 
 function buildLineShareMessages(shareUrl) {
-  const title = cardConfig.title || "?餃???";
-  const desc = (cardConfig.desc || "暺????餃???").replace(/\s+/g, " ").slice(0, 120);
-  const chatText = (cardConfig.chatText || `${title} - ?餃???`).replace(/\s+/g, " ").slice(0, 400);
+  const title = cardConfig.title || "電子名片";
+  const desc = (cardConfig.desc || "點擊開啟電子名片").replace(/\s+/g, " ").slice(0, 120);
+  const chatText = (cardConfig.chatText || `${title} - 電子名片`).replace(/\s+/g, " ").slice(0, 400);
   const coverActionUrl = escapeUrl(cardConfig.coverLink || shareUrl);
   const heroUrl = /^https:\/\//i.test(cardConfig.coverUrl || "") ? cardConfig.coverUrl : "";
   const autoShareUrl = createShareLaunchUrl();
@@ -1277,7 +1277,7 @@ function buildLineShareMessages(shareUrl) {
         color: button.color || "#147d64",
         action: {
           type: "uri",
-          label: String(button.label || "??").slice(0, 20),
+          label: String(button.label || "開啟").slice(0, 20),
           uri
         }
       };
@@ -1290,7 +1290,7 @@ function buildLineShareMessages(shareUrl) {
       color: "#147d64",
       action: {
         type: "uri",
-        label: "????",
+        label: "開啟名片",
         uri: shareUrl
       }
     });
@@ -1365,7 +1365,7 @@ function buildLineShareMessages(shareUrl) {
           color: "#147d64",
           action: {
             type: "uri",
-            label: "????",
+            label: "開啟名片",
             uri: shareUrl
           }
         }
@@ -1495,7 +1495,7 @@ async function shareCardDemo() {
     if (navigator.share) {
       await navigator.share({
         title: cardConfig.title,
-        text: "????餃???",
+        text: "這是我的電子名片",
         url: shareUrl
       });
       setBuilderNote("已開啟系統分享。") ;
@@ -1510,7 +1510,7 @@ async function shareCardDemo() {
     setBuilderNote("分享失敗，請稍後再試或複製連結。") ;
     return;
   }
-  window.prompt("隢?鋆賢?鈭怎雯?", shareUrl);
+  window.prompt("請複製分享連結", shareUrl);
 }
 
 function shouldAutoOpenSharePicker() {
