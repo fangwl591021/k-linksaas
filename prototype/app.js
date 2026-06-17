@@ -1202,6 +1202,9 @@ function updatePublicCardFromConfig() {
   const previewName = document.querySelector("#previewName");
   const previewTitle = document.querySelector("#previewTitle");
   const previewBio = document.querySelector("#previewBio");
+  const previewAvatar = document.querySelector(".profile-band .avatar");
+  const previewBrand = document.querySelector(".profile-band .eyebrow");
+  const contactList = document.querySelector(".contact-list");
   if (previewCover) {
     previewCover.src = cardConfig.coverUrl || "https://placehold.co/800x520?text=Cover";
     previewCover.className = `public-cover ${normalizeLayout(cardConfig.layout)}`;
@@ -1209,14 +1212,50 @@ function updatePublicCardFromConfig() {
     previewCover.style.cursor = cardConfig.coverLink ? "pointer" : "";
   }
   if (previewName) previewName.textContent = cardConfig.title;
-  if (previewTitle) previewTitle.textContent = "SaaS 電子名片";
+  if (previewTitle) {
+    const subtitle = cardConfig.ownerName || cardConfig.ownerMemberNo || "";
+    previewTitle.textContent = subtitle;
+    previewTitle.hidden = !subtitle;
+  }
   if (previewBio) previewBio.textContent = cardConfig.desc.replace(/\n/g, " ");
+  if (previewAvatar) previewAvatar.textContent = createInitials(cardConfig.title || cardConfig.ownerName || "");
+  if (previewBrand) {
+    previewBrand.textContent = cardConfig.ownerMemberNo || "電子名片";
+  }
+  if (contactList) {
+    const contacts = [
+      cleanContactValue(cardConfig.ownerEmail),
+      cleanContactValue(cardConfig.ownerMemberNo ? `會員編號 ${cardConfig.ownerMemberNo}` : "")
+    ].filter(Boolean);
+    contactList.replaceChildren(...contacts.map((text) => {
+      const item = document.createElement("span");
+      item.textContent = text;
+      return item;
+    }));
+    contactList.hidden = contacts.length === 0;
+  }
 
   const actionButtons = document.querySelectorAll(".actions .action-button");
   cardConfig.buttons.slice(0, actionButtons.length).forEach((item, index) => {
     actionButtons[index].textContent = item.label;
     actionButtons[index].style.background = item.color;
   });
+}
+
+function createInitials(value) {
+  const text = String(value || "").trim();
+  if (!text) return "名";
+  const asciiWords = text.match(/[A-Za-z0-9]+/g);
+  if (asciiWords?.length) {
+    return asciiWords.slice(0, 2).map((word) => word[0]).join("").toUpperCase();
+  }
+  return text.slice(0, 1);
+}
+
+function cleanContactValue(value) {
+  const text = String(value || "").trim();
+  if (!text || text.endsWith("@k-linksaas.local")) return "";
+  return text;
 }
 
 document.querySelector("#publicShareButton")?.addEventListener("click", (event) => {

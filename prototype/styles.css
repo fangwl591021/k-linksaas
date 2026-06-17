@@ -659,6 +659,10 @@ select {
   padding: 28px;
 }
 
+#card .insight-panel {
+  display: none;
+}
+
 .check-list {
   margin: 0 0 22px;
   padding-left: 20px;
