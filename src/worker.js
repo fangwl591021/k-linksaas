@@ -71,6 +71,10 @@ async function handleApi(request, env, url) {
       return loginUser(request, env);
     }
 
+    if (url.pathname === "/api/line-login" && request.method === "POST") {
+      return loginLineUser(request, env);
+    }
+
     if (url.pathname === "/api/session" && request.method === "GET") {
       return getSessionResponse(request, env);
     }
@@ -218,6 +222,153 @@ async function loginUser(request, env) {
   }, 200, {
     "set-cookie": createSessionCookie(token, SESSION_DAYS * 24 * 60 * 60)
   });
+}
+
+async function loginLineUser(request, env) {
+  const body = await readJson(request);
+  const providerUserId = cleanText(body.providerUserId || "", 160);
+  const displayName = cleanText(body.displayName || "LINE User", 120);
+  const pictureUrl = cleanText(body.pictureUrl || "", 1000);
+  const accessToken = cleanText(body.accessToken || "", 2000);
+  const now = new Date().toISOString();
+
+  if (!providerUserId) {
+    return json({ ok: false, error: "LINE user id is required" }, 400);
+  }
+  if (!accessToken) {
+    return json({ ok: false, error: "LINE access token is required" }, 401);
+  }
+
+  const verifiedProfile = await verifyLineAccessToken(accessToken);
+  if (!verifiedProfile || verifiedProfile.userId !== providerUserId) {
+    return json({ ok: false, error: "LINE identity verification failed" }, 401);
+  }
+
+  let account = await env.DB.prepare(`
+    SELECT aa.id AS account_id, aa.user_id,
+      u.id, u.display_name, u.email, u.member_no, u.points, u.role, u.status, u.plan
+    FROM auth_accounts aa
+    JOIN users u ON u.id = aa.user_id
+    WHERE aa.provider = 'line' AND aa.provider_user_id = ?
+    LIMIT 1
+  `).bind(providerUserId).first();
+
+  if (!account) {
+    const userId = normalizeId(`user-line-${providerUserId}`);
+    const memberNo = generateMemberNo(providerUserId);
+    const slug = await uniqueSlug(env, slugify(displayName || `line-${providerUserId.slice(-6)}`));
+    const cardId = crypto.randomUUID();
+    const accountId = crypto.randomUUID();
+    const buttonsPayload = {
+      version: 2,
+      buttons: [
+        { label: "LINE Login", url: "https://liff.line.me/2007221311-jwiMeoXT", color: "#06C755" },
+        { label: "Book a Demo", url: "https://k-linksaas.fangwl591021.workers.dev/", color: "#2c5f9e" },
+        { label: "Download vCard", url: "#vcard", color: "#c8792d" }
+      ]
+    };
+
+    await env.DB.batch([
+      env.DB.prepare(`
+        INSERT INTO users (
+          id, auth_provider, provider_user_id, display_name, email, member_no, points, role,
+          company, job_title, phone, status, plan, line_user_id, created_at, updated_at
+        )
+        VALUES (?, 'line', ?, ?, NULL, ?, 0, 'owner', '', '', '', 'active', 'free', ?, ?, ?)
+      `).bind(userId, providerUserId, displayName, memberNo, providerUserId, now, now),
+      env.DB.prepare(`
+        INSERT INTO auth_accounts (id, user_id, provider, provider_user_id, email, password_hash, salt, created_at)
+        VALUES (?, ?, 'line', ?, NULL, NULL, NULL, ?)
+      `).bind(accountId, userId, providerUserId, now),
+      env.DB.prepare(`
+        INSERT INTO cards (
+          id, owner_id, slug, title, description, cover_url, layout, desc_color, desc_align,
+          buttons_json, is_published, display_name, theme_color, created_at, updated_at
+        )
+        VALUES (?, ?, ?, ?, ?, ?, 'landscape', '#61707a', 'center', ?, 1, ?, '#147d64', ?, ?)
+      `).bind(
+        cardId,
+        userId,
+        slug,
+        displayName,
+        "SaaS 電子名片",
+        pictureUrl || "https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1200&q=80",
+        JSON.stringify(buttonsPayload),
+        displayName,
+        now,
+        now
+      ),
+      env.DB.prepare(`
+        INSERT INTO admin_records (id, category, title, body, status, priority, related_type, related_id, created_by, created_at, updated_at)
+        VALUES (?, 'member', ?, ?, 'done', 'normal', 'user', ?, 'line-login-api', ?, ?)
+      `).bind(
+        crypto.randomUUID(),
+        `LINE member created: ${displayName}`,
+        `member_no=${memberNo}, provider=line, slug=${slug}`,
+        userId,
+        now,
+        now
+      )
+    ]);
+
+    account = await env.DB.prepare(`
+      SELECT ? AS account_id, ? AS user_id,
+        u.id, u.display_name, u.email, u.member_no, u.points, u.role, u.status, u.plan
+      FROM users u
+      WHERE u.id = ?
+      LIMIT 1
+    `).bind(accountId, userId, userId).first();
+  } else {
+    await env.DB.prepare("UPDATE auth_accounts SET last_login_at = ? WHERE id = ?").bind(now, account.account_id).run();
+  }
+
+  const token = crypto.randomUUID() + "." + crypto.randomUUID();
+  const tokenHash = await hashText(token);
+  const expiresAt = new Date(Date.now() + SESSION_DAYS * 24 * 60 * 60 * 1000).toISOString();
+  await env.DB.prepare(`
+    INSERT INTO sessions (id, user_id, token_hash, user_agent, ip_hint, expires_at, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `).bind(
+    crypto.randomUUID(),
+    account.user_id,
+    tokenHash,
+    cleanText(request.headers.get("user-agent") || "", 500),
+    cleanText(request.headers.get("cf-connecting-ip") || "", 80),
+    expiresAt,
+    now
+  ).run();
+
+  const card = await env.DB.prepare(`
+    SELECT id, slug, title, description, cover_url, layout, is_published,
+      display_name, company, job_title, phone, email, website, line_url, address,
+      theme_color, public_note, updated_at
+    FROM cards
+    WHERE owner_id = ?
+    ORDER BY updated_at DESC
+    LIMIT 1
+  `).bind(account.user_id).first();
+
+  return jsonWithHeaders({
+    ok: true,
+    user: serializeSessionUser(account),
+    card: card ? serializeMemberCard(card) : null
+  }, 200, {
+    "set-cookie": createSessionCookie(token, SESSION_DAYS * 24 * 60 * 60)
+  });
+}
+
+async function verifyLineAccessToken(accessToken) {
+  try {
+    const response = await fetch("https://api.line.me/v2/profile", {
+      headers: {
+        authorization: `Bearer ${accessToken}`
+      }
+    });
+    if (!response.ok) return null;
+    return response.json();
+  } catch {
+    return null;
+  }
 }
 
 async function getSessionResponse(request, env) {

@@ -9,6 +9,9 @@ const appState = {
   metrics: { views: 0, clicks: 0, leads: 0 },
   liffReady: false,
   lineProfile: null,
+  sessionUser: null,
+  memberCard: null,
+  canEdit: location.protocol === "file:",
   profile: null,
   editor: { type: "", buttonIndex: -1, pendingCoverBlob: null, pendingCoverObjectUrl: "" }
 };
@@ -192,6 +195,68 @@ async function apiRequest(path, options = {}) {
   return data;
 }
 
+function isCurrentUserCard() {
+  return Boolean(appState.sessionUser && appState.memberCard?.slug && appState.memberCard.slug === appConfig.slug);
+}
+
+function setEditPermission(message = "") {
+  appState.canEdit = isCurrentUserCard();
+  document.body.classList.toggle("card-readonly", !appState.canEdit);
+  document.querySelectorAll("#saveCardButton, .add-card-button, [data-edit-type]").forEach((element) => {
+    element.disabled = !appState.canEdit;
+    element.title = appState.canEdit ? "" : "此名片不屬於目前登入者，不能編輯";
+  });
+  if (message) {
+    setBuilderNote(message);
+  } else if (!appState.sessionUser) {
+    setBuilderNote("請先登入自己的帳號後再編輯名片。");
+  } else if (!appState.canEdit) {
+    setBuilderNote("此名片不屬於目前登入者，已切換為唯讀。");
+  }
+}
+
+async function loadMemberSession(options = {}) {
+  if (isFilePreview()) return null;
+  try {
+    const data = await apiRequest("/api/member/me");
+    appState.sessionUser = data.user || null;
+    appState.memberCard = data.card || null;
+    const shouldUseOwnCard = options.preferOwnCard && appState.memberCard?.slug && appConfig.slug !== appState.memberCard.slug;
+    if (shouldUseOwnCard) {
+      appConfig.slug = appState.memberCard.slug;
+    }
+    setEditPermission();
+    return data;
+  } catch {
+    appState.sessionUser = null;
+    appState.memberCard = null;
+    setEditPermission();
+    return null;
+  }
+}
+
+async function applyLineSession(profile, options = {}) {
+  if (!profile || isFilePreview()) return null;
+  const data = await apiRequest("/api/line-login", {
+    method: "POST",
+    body: JSON.stringify({
+      providerUserId: profile.userId,
+      displayName: profile.displayName,
+      pictureUrl: profile.pictureUrl || "",
+      accessToken: window.liff?.getAccessToken?.() || ""
+    })
+  });
+  appState.sessionUser = data.user || null;
+  appState.memberCard = data.card || null;
+  if (options.preferOwnCard && appState.memberCard?.slug) {
+    appConfig.slug = appState.memberCard.slug;
+    await loadCardFromD1();
+    await loadDashboard();
+  }
+  setEditPermission(appState.canEdit ? "已登入並載入自己的名片。" : "已登入，但此名片不屬於目前登入者。");
+  return data;
+}
+
 function publicUrl(path) {
   return new URL(path.replace(/^\//, ""), appConfig.siteUrl).toString();
 }
@@ -296,13 +361,19 @@ async function loadCardFromD1() {
     syncLayoutButtons();
     renderWysiwygCard();
     updatePublicCardFromConfig();
-    setBuilderNote(`已載入名片資料：${data.card.updatedAt || "尚未更新"}`);
+    setEditPermission(isCurrentUserCard()
+      ? `已載入自己的名片：${data.card.updatedAt || "尚未更新"}`
+      : "已載入名片，但此名片不屬於目前登入者，不能編輯。");
   } catch (error) {
     setBuilderNote(`名片資料讀取失敗：${error.message}`);
   }
 }
 
 async function saveCardToD1() {
+  if (!appState.canEdit) {
+    setEditPermission("此名片不屬於目前登入者，不能儲存。");
+    return;
+  }
   setBuilderNote("正在儲存名片...");
   saveActiveLayoutSnapshot();
   const owner = appState.lineProfile
@@ -615,6 +686,8 @@ function installSaveButton() {
   button.type = "button";
   button.className = "submit-button";
   button.textContent = "儲存名片";
+  button.disabled = !appState.canEdit;
+  button.title = appState.canEdit ? "" : "此名片不屬於目前登入者，不能儲存";
   button.addEventListener("click", () => runLocked(button, saveCardToD1, "儲存中...", "已儲存"));
   toolbar.append(button);
 }
@@ -642,6 +715,8 @@ function createTarget(type, iconLabel, className = "") {
   button.type = "button";
   button.className = `edit-target ${className}`.trim();
   button.dataset.editType = type;
+  button.disabled = !appState.canEdit;
+  button.title = appState.canEdit ? "" : "此名片不屬於目前登入者，不能編輯";
   button.append(createEditIcon(iconLabel));
   return button;
 }
@@ -714,7 +789,13 @@ function renderWysiwygCard() {
   add.type = "button";
   add.className = "add-card-button";
   add.textContent = "+ 新增按鈕";
+  add.disabled = !appState.canEdit;
+  add.title = appState.canEdit ? "" : "此名片不屬於目前登入者，不能編輯";
   add.addEventListener("click", () => {
+    if (!appState.canEdit) {
+      setEditPermission("此名片不屬於目前登入者，不能編輯。");
+      return;
+    }
     if (cardConfig.buttons.length >= 4) {
       setBuilderNote("最多只能保留 4 個按鈕。請先刪除一個按鈕再新增。");
       return;
@@ -730,6 +811,10 @@ function renderWysiwygCard() {
 
   els.wysiwygCanvas.querySelectorAll("[data-edit-type]").forEach((target) => {
     target.addEventListener("click", () => {
+      if (!appState.canEdit) {
+        setEditPermission("此名片不屬於目前登入者，不能編輯。");
+        return;
+      }
       const index = target.dataset.buttonIndex ? Number(target.dataset.buttonIndex) : -1;
       openEditModal(target.dataset.editType, index);
     });
@@ -737,6 +822,10 @@ function renderWysiwygCard() {
 }
 
 function openEditModal(type, buttonIndex = -1) {
+  if (!appState.canEdit) {
+    setEditPermission("此名片不屬於目前登入者，不能編輯。");
+    return;
+  }
   appState.editor.type = type;
   appState.editor.buttonIndex = buttonIndex;
   els.editModal.classList.remove("hidden");
@@ -1298,7 +1387,17 @@ async function handleLineLogin() {
 
   appState.lineProfile = await window.liff.getProfile();
   setLiffStatus("LINE 已登入", `${appState.lineProfile.displayName} / ${appState.lineProfile.userId}`);
-  if (els.loginNote) els.loginNote.textContent = `LINE 已登入：${appState.lineProfile.displayName}`;
+  if (els.loginNote) els.loginNote.textContent = `LINE 已登入：${appState.lineProfile.displayName}，正在載入自己的名片...`;
+  try {
+    const data = await applyLineSession(appState.lineProfile, { preferOwnCard: true });
+    if (els.loginNote) {
+      els.loginNote.textContent = data?.card?.slug
+        ? `LINE 已登入：${appState.lineProfile.displayName}，已切換至自己的名片 ${data.card.slug}`
+        : `LINE 已登入：${appState.lineProfile.displayName}，但尚未建立名片`;
+    }
+  } catch (error) {
+    if (els.loginNote) els.loginNote.textContent = `LINE 身分綁定失敗：${error.message}`;
+  }
 }
 
 function buildLineShareMessages(shareUrl) {
@@ -1600,6 +1699,7 @@ async function boot() {
   }
   initMobileTabs();
   installSaveButton();
+  await loadMemberSession({ preferOwnCard: appConfig.mode === "home" });
   renderWysiwygCard();
   updatePublicCardFromConfig();
   renderMetrics();
@@ -1610,7 +1710,12 @@ async function boot() {
   }
   await loadDashboard();
   await logEvent("view");
-  initializeLiff();
+  await initializeLiff();
+  if (appState.lineProfile && !appState.sessionUser) {
+    await applyLineSession(appState.lineProfile, { preferOwnCard: appConfig.mode === "home" }).catch((error) => {
+      setBuilderNote(`LINE 身分綁定失敗：${error.message}`);
+    });
+  }
 }
 
 boot();
