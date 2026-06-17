@@ -1123,7 +1123,8 @@ function appendSelect(labelText, id, value, options) {
 
 els.cardEditForm?.addEventListener("submit", async (event) => {
   event.preventDefault();
-  const lock = lockButton(event.submitter, "套用中...", "已完成");
+  const submitButton = event.submitter || els.cardEditForm.querySelector(".edit-actions .submit-button");
+  const lock = lockButton(submitButton, "套用中...", "已完成");
   if (!lock) return;
   if (appState.editor.type === "cover") {
     const preview = document.querySelector("#editCoverPreview");
