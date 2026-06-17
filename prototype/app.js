@@ -1130,6 +1130,10 @@ els.cardEditForm?.addEventListener("submit", async (event) => {
     const uploadedUrl = preview?.dataset.uploadedUrl || "";
     const typedUrl = document.querySelector("#editCoverUrl")?.value || "";
     if (appState.editor.pendingCoverBlob) {
+      if (isFilePreview()) {
+        cardConfig.coverUrl = appState.editor.pendingCoverObjectUrl || URL.createObjectURL(appState.editor.pendingCoverBlob);
+        setBuilderNote("本機預覽已套用封面；正式網站才會上傳圖片。");
+      } else {
       setBuilderNote("正在上傳封面圖片...");
       try {
         cardConfig.coverUrl = await uploadImageBlob(appState.editor.pendingCoverBlob);
@@ -1143,7 +1147,12 @@ els.cardEditForm?.addEventListener("submit", async (event) => {
         setBuilderNote(`封面圖片上傳失敗：${error.message}`);
         return;
       }
+      }
     } else if (uploadedUrl.startsWith("data:image/")) {
+      if (isFilePreview()) {
+        cardConfig.coverUrl = uploadedUrl;
+        setBuilderNote("本機預覽已套用封面；正式網站才會上傳圖片。");
+      } else {
       setBuilderNote("正在上傳封面圖片...");
       try {
         cardConfig.coverUrl = await uploadImageDataUrl(uploadedUrl);
@@ -1151,6 +1160,7 @@ els.cardEditForm?.addEventListener("submit", async (event) => {
         lock.fail();
         setBuilderNote(`封面圖片上傳失敗：${error.message}`);
         return;
+      }
       }
     } else {
       cardConfig.coverUrl = uploadedUrl || escapeUrl(typedUrl);
