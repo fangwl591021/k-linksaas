@@ -1218,14 +1218,13 @@ function updatePublicCardFromConfig() {
     previewTitle.hidden = !subtitle;
   }
   if (previewBio) previewBio.textContent = cardConfig.desc.replace(/\n/g, " ");
-  if (previewAvatar) previewAvatar.textContent = createInitials(cardConfig.title || cardConfig.ownerName || "");
+  if (previewAvatar) previewAvatar.hidden = true;
   if (previewBrand) {
-    previewBrand.textContent = cardConfig.ownerMemberNo || "電子名片";
+    previewBrand.hidden = true;
   }
   if (contactList) {
     const contacts = [
-      cleanContactValue(cardConfig.ownerEmail),
-      cleanContactValue(cardConfig.ownerMemberNo ? `會員編號 ${cardConfig.ownerMemberNo}` : "")
+      cleanContactValue(cardConfig.ownerEmail)
     ].filter(Boolean);
     contactList.replaceChildren(...contacts.map((text) => {
       const item = document.createElement("span");

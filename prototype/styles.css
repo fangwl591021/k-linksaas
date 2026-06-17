@@ -539,6 +539,11 @@ h2 {
   opacity: 0.76;
 }
 
+.profile-band .avatar[hidden],
+.profile-band .eyebrow[hidden] {
+  display: none;
+}
+
 .avatar {
   width: 76px;
   height: 76px;
