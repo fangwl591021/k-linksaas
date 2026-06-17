@@ -966,9 +966,13 @@ select {
 
 .edit-dialog {
   width: min(420px, 100%);
+  max-height: calc(100vh - 40px);
+  display: flex;
+  flex-direction: column;
   border-radius: 8px;
   background: #fff;
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+  overflow: hidden;
 }
 
 .edit-dialog-head {
@@ -999,6 +1003,8 @@ select {
   display: grid;
   gap: 14px;
   padding: 20px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .upload-space {
@@ -1039,7 +1045,7 @@ select {
 .upload-space img {
   width: 100%;
   height: auto;
-  max-height: none;
+  max-height: min(52vh, 420px);
   object-fit: contain;
   border-radius: 8px;
   border: 1px solid var(--line);
@@ -1056,20 +1062,20 @@ select {
 }
 
 .upload-space.has-file img {
-  max-height: none;
+  max-height: min(52vh, 420px);
 }
 
 .upload-space.portrait img {
-  max-height: none;
+  max-height: min(58vh, 520px);
 }
 
 .upload-space.square img {
-  max-height: none;
+  max-height: min(52vh, 420px);
 }
 
 .upload-space.has-file.portrait img,
 .upload-space.has-file.square img {
-  max-height: none;
+  max-height: min(52vh, 420px);
 }
 
 .photo-cropper {
