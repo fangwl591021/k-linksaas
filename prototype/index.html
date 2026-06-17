@@ -14,7 +14,12 @@
       }
     }());
   </script>
-  <link rel="stylesheet" href="/styles.css?v=public-card-clean-head-20260617">
+  <script>
+    (function () {
+      var assetRoot = location.protocol === "file:" ? "" : "/";
+      document.write('<link rel="stylesheet" href="' + assetRoot + 'styles.css?v=asset-path-fix-20260617">');
+    }());
+  </script>
   <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 </head>
 <body>
@@ -314,6 +319,11 @@
     </div>
   </div>
 
-  <script src="/app.js?v=file-preview-edit-fix-20260617"></script>
+  <script>
+    (function () {
+      var assetRoot = location.protocol === "file:" ? "" : "/";
+      document.write('<script src="' + assetRoot + 'app.js?v=asset-path-fix-20260617"><\/script>');
+    }());
+  </script>
 </body>
 </html>
