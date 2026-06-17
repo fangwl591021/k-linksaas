@@ -254,6 +254,38 @@ async function loginLineUser(request, env) {
   `).bind(providerUserId).first();
 
   if (!account) {
+    const existingLineUser = await env.DB.prepare(`
+      SELECT id, display_name, email, member_no, points, role, status, plan
+      FROM users
+      WHERE auth_provider = 'line' AND provider_user_id = ?
+      LIMIT 1
+    `).bind(providerUserId).first();
+    if (existingLineUser) {
+      const accountId = crypto.randomUUID();
+      await env.DB.prepare(`
+        INSERT INTO auth_accounts (id, user_id, provider, provider_user_id, email, password_hash, salt, created_at, last_login_at)
+        VALUES (?, ?, 'line', ?, ?, NULL, NULL, ?, ?)
+      `).bind(
+        accountId,
+        existingLineUser.id,
+        providerUserId,
+        existingLineUser.email || null,
+        now,
+        now
+      ).run();
+      account = {
+        account_id: accountId,
+        user_id: existingLineUser.id,
+        id: existingLineUser.id,
+        display_name: existingLineUser.display_name,
+        email: existingLineUser.email,
+        member_no: existingLineUser.member_no,
+        points: existingLineUser.points,
+        role: existingLineUser.role,
+        status: existingLineUser.status,
+        plan: existingLineUser.plan
+      };
+    } else {
     const userId = normalizeId(`user-line-${providerUserId}`);
     const memberNo = generateMemberNo(providerUserId);
     const slug = await uniqueSlug(env, slugify(displayName || `line-${providerUserId.slice(-6)}`));
@@ -318,6 +350,7 @@ async function loginLineUser(request, env) {
       WHERE u.id = ?
       LIMIT 1
     `).bind(accountId, userId, userId).first();
+    }
   } else {
     await env.DB.prepare("UPDATE auth_accounts SET last_login_at = ? WHERE id = ?").bind(now, account.account_id).run();
   }

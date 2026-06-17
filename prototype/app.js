@@ -663,12 +663,37 @@ document.querySelectorAll("[data-layout]").forEach((button) => {
 
 const loginForm = document.querySelector("#loginForm");
 if (loginForm) {
-  loginForm.addEventListener("submit", (event) => {
+  loginForm.addEventListener("submit", async (event) => {
     event.preventDefault();
-    const email = document.querySelector("#loginEmail")?.value.trim() || "demo@k-linksaas.local";
-    const role = document.querySelector("#loginRole")?.value || "owner";
-    if (els.loginNote) {
-      els.loginNote.textContent = `${email} 已登入 ${role} demo。`;
+    const lock = lockButton(event.submitter, "登入中...", "已登入", { resetAfterMs: 1200 });
+    if (!lock) return;
+    const email = document.querySelector("#loginEmail")?.value.trim() || "";
+    const password = document.querySelector("#loginPassword")?.value || "";
+    if (!email || !password) {
+      lock.fail();
+      if (els.loginNote) els.loginNote.textContent = "請輸入電子郵件與密碼。";
+      return;
+    }
+    try {
+      const loginData = await apiRequest("/api/login", {
+        method: "POST",
+        body: JSON.stringify({ email, password })
+      });
+      appState.sessionUser = loginData.user || null;
+      await loadMemberSession({ preferOwnCard: true });
+      if (appState.memberCard?.slug) {
+        appConfig.slug = appState.memberCard.slug;
+        await loadCardFromD1();
+        await loadDashboard();
+      }
+      setEditPermission(appState.canEdit ? "已登入並載入自己的名片。" : "已登入，但尚未找到自己的名片。");
+      if (els.loginNote) {
+        els.loginNote.textContent = `已登入：${appState.sessionUser?.displayName || appState.sessionUser?.email || email}`;
+      }
+      lock.done();
+    } catch (error) {
+      lock.fail();
+      if (els.loginNote) els.loginNote.textContent = `登入失敗：${error.message}`;
     }
   });
 }
@@ -1711,11 +1736,6 @@ async function boot() {
   await loadDashboard();
   await logEvent("view");
   await initializeLiff();
-  if (appState.lineProfile && !appState.sessionUser) {
-    await applyLineSession(appState.lineProfile, { preferOwnCard: appConfig.mode === "home" }).catch((error) => {
-      setBuilderNote(`LINE 身分綁定失敗：${error.message}`);
-    });
-  }
 }
 
 boot();
