@@ -1213,9 +1213,8 @@ function updatePublicCardFromConfig() {
   }
   if (previewName) previewName.textContent = cardConfig.title;
   if (previewTitle) {
-    const subtitle = cardConfig.ownerName || cardConfig.ownerMemberNo || "";
-    previewTitle.textContent = subtitle;
-    previewTitle.hidden = !subtitle;
+    previewTitle.textContent = "";
+    previewTitle.hidden = true;
   }
   if (previewBio) previewBio.textContent = cardConfig.desc.replace(/\n/g, " ");
   if (previewAvatar) previewAvatar.hidden = true;
@@ -1223,15 +1222,8 @@ function updatePublicCardFromConfig() {
     previewBrand.hidden = true;
   }
   if (contactList) {
-    const contacts = [
-      cleanContactValue(cardConfig.ownerEmail)
-    ].filter(Boolean);
-    contactList.replaceChildren(...contacts.map((text) => {
-      const item = document.createElement("span");
-      item.textContent = text;
-      return item;
-    }));
-    contactList.hidden = contacts.length === 0;
+    contactList.replaceChildren();
+    contactList.hidden = true;
   }
 
   const actionButtons = document.querySelectorAll(".actions .action-button");
