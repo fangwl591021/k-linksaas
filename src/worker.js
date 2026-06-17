@@ -42,7 +42,7 @@ export default {
       return env.ASSETS.fetch(new Request(new URL("/share.html", url.origin), request));
     }
 
-    if (url.pathname === "/" || url.pathname.startsWith("/c/")) {
+    if (url.pathname === "/" || url.pathname.startsWith("/c/") || url.pathname.startsWith("/u/")) {
       return env.ASSETS.fetch(new Request(new URL("/index.html", url.origin), request));
     }
 
@@ -98,6 +98,11 @@ async function handleApi(request, env, url) {
     const cardMatch = url.pathname.match(/^\/api\/cards\/([^/]+)$/);
     if (cardMatch && request.method === "GET") {
       return getCard(env, decodeURIComponent(cardMatch[1]));
+    }
+
+    const profileMatch = url.pathname.match(/^\/api\/profiles\/([^/]+)$/);
+    if (profileMatch && request.method === "GET") {
+      return getPublicProfile(env, decodeURIComponent(profileMatch[1]));
     }
 
     if (cardMatch && request.method === "PUT") {
@@ -448,6 +453,63 @@ async function getCard(env, slug) {
   const card = await findCard(env, slug);
   if (!card) return json({ ok: false, error: "Card not found" }, 404);
   return json({ ok: true, card: serializeCard(card) });
+}
+
+async function getPublicProfile(env, storeCode) {
+  const profile = await env.DB.prepare(`
+    SELECT
+      mp.user_id,
+      mp.store_code,
+      mp.headline,
+      mp.intro,
+      mp.avatar_url,
+      mp.cover_url,
+      mp.line_friend_url,
+      mp.phone,
+      mp.website,
+      mp.public_status,
+      mp.updated_at,
+      u.display_name,
+      u.member_no,
+      u.points,
+      u.role
+    FROM member_profiles mp
+    JOIN users u ON u.id = mp.user_id
+    WHERE lower(mp.store_code) = lower(?) AND mp.public_status = 'published'
+    LIMIT 1
+  `).bind(storeCode).first();
+
+  if (!profile) return json({ ok: false, error: "Profile not found" }, 404);
+
+  const card = await env.DB.prepare(`
+    SELECT c.*, u.display_name AS owner_name, u.email AS owner_email,
+      u.member_no AS owner_member_no, u.points AS owner_points
+    FROM cards c
+    JOIN users u ON u.id = c.owner_id
+    WHERE c.owner_id = ? AND c.is_published = 1
+    ORDER BY c.updated_at DESC
+    LIMIT 1
+  `).bind(profile.user_id).first();
+
+  return json({
+    ok: true,
+    profile: {
+      userId: profile.user_id,
+      storeCode: profile.store_code,
+      displayName: profile.display_name,
+      memberNo: profile.member_no,
+      points: Number(profile.points || 0),
+      headline: profile.headline,
+      intro: profile.intro,
+      avatarUrl: profile.avatar_url,
+      coverUrl: profile.cover_url,
+      lineFriendUrl: profile.line_friend_url,
+      phone: profile.phone,
+      website: profile.website,
+      updatedAt: profile.updated_at
+    },
+    card: card ? serializeCard(card) : null
+  });
 }
 
 async function saveCard(request, env, slug) {
