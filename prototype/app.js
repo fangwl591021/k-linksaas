@@ -843,6 +843,7 @@ function appendCoverUpload(value) {
   }
   appState.editor.pendingCoverBlob = null;
   appState.editor.pendingCoverObjectUrl = "";
+  const cropSize = getCoverCropSize(cardConfig.layout);
   const wrapper = document.createElement("div");
   wrapper.className = `upload-space ${cardConfig.layout || "landscape"}`;
 
@@ -859,6 +860,15 @@ function appendCoverUpload(value) {
 
   wrapper.append(input, preview);
   els.cardEditForm.append(wrapper);
+
+  const fallback = document.createElement("label");
+  fallback.textContent = "圖片網址";
+  const urlInput = document.createElement("input");
+  urlInput.id = "editCoverUrl";
+  urlInput.value = value || "";
+  urlInput.placeholder = "https://...";
+  fallback.append(urlInput);
+  els.cardEditForm.append(fallback);
 
   const cropper = document.createElement("div");
   cropper.className = "photo-cropper hidden";
@@ -1057,14 +1067,6 @@ function appendCoverUpload(value) {
     reader.readAsDataURL(file);
   });
 
-  const fallback = document.createElement("label");
-  fallback.textContent = "點選上傳圖片";
-  const urlInput = document.createElement("input");
-  urlInput.id = "editCoverUrl";
-  urlInput.value = value || "";
-  urlInput.placeholder = "https://...";
-  fallback.append(urlInput);
-  els.cardEditForm.append(fallback);
 }
 
 function createCropRange(labelText, id, min, max, value, step) {
